@@ -5,88 +5,32 @@ from splinter import Browser
 import pymongo
 import time
 
+# Set up connection
 conn = 'mongodb://localhost:27017'
 client = pymongo.MongoClient(conn)
 
 db = client.nhl_db
 collection = db.articles
 
-
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[ ]:
-
-
-# ! pip install lxml
-
-
-# In[ ]:
-
-
-# ! pip install html
-
-
-# In[ ]:
-
-
-# Initialize PyMongo to work with MongoDBs
-# conn = 'mongodb://localhost:27017'
-# client = pymongo.MongoClient(conn)
-
-
-# In[ ]:
-
-
-# Define database and collection
-# db = client.nhl_db
-# collection = db.articles
-
-
-# In[1]:
-
-
-# Import Splinter, BeautifulSoup, and Pandas
-
-
-# In[ ]:
-
-
-#! pip install splinter
-
-
-# In[2]:
-
-
-# Set up Splinter
-def init_browser():
+# Define scrape funtion to pull the scraped info out
+def scrape():
     executable_path = {'executable_path': ChromeDriverManager().install()}
     browser = Browser('chrome', **executable_path, headless=False)
+    listings = {}
 
-
-def scrape():
-    browser = init_browser()
 # Visit the Mars news site
     browser.visit('https://redplanetscience.com/')
 # # STEP ONE: Scrapping
 
 # ## NASA Mars News
 
-# In[ ]:
-
-
 # HTML object
     html = browser.html
-
 # Parse HTML with Beautiful Soup
     n_soup = soup(html, 'html.parser')
 
 # Get the first list_text in the div tag, this is info about the lastest news
     n_soup.select_one('div.list_text')
-
-
-# In[ ]:
-
 
 # Assign variables
     news_title = 'NASA Administrator Statement on Moon to Mars Initiative, FY 2021 Budget'
@@ -97,49 +41,21 @@ def scrape():
     news_title
 
 
-# In[ ]:
-
     news_p
 
 
-# In[ ]:
-
-
-# browser.quit()
-
-
 # ## JPL Mars Space Images - Featured Image
-
-# In[ ]:
-
 
 # Visit the Mars news site
     url_2 = 'https://spaceimages-mars.com/'
     browser.visit(url_2)
 
-
-# In[ ]:
-
-
     html = browser.html
     soup = soup(html, 'html.parser')
 
-
-# In[ ]:
-
-
     print(html)
 
-
-# In[ ]:
-
-
     print(soup)
-
-
-# In[ ]:
-
-
 # Ask Splinter to Go to Site and Click Button with Class Name full_image
     full_image_button = browser.find_by_tag("button")[1]
     full_image_button.click()
@@ -152,51 +68,22 @@ def scrape():
     html = browser.html
     soup_1 = soup(html, 'html.parser')
 
-
-# In[ ]:
-
-
 # Use
     soup_1 = soup(html, 'html.parser')
 
-
-# In[ ]:
-
-
 # Save the image url into a variable
     featured_image_url = 'http://spaceimage-mars.com/image/featured/mars2.jpg'
-
-
-# ## Mars Facts
-
-# In[ ]:
-
+# ## Mars Fact
 
 # Use pandas to scrape the table containing the planet including Diameter, mass, etc.
 
-
-# In[ ]:
-
-
     url = 'https://galaxyfacts-mars.com'
-
-
-# In[ ]:
-
 
     tables = pd.read_html(url)
     tables
 
-
-# In[ ]:
-
-
     df = tables[0]
     df.head()
-
-
-# In[ ]:
-
 
 # Convert dataframe to html
     html_table = df.to_html()
@@ -205,34 +92,15 @@ def scrape():
 
 # ## Mars Hemispheres
 
-# In[3]:
-
-
-# In[4]:
-
-
 # Go to the website to obtain high resolution image for each Mar's hemispheres
     url = 'https://marshemispheres.com'
-
-
-# In[5]:
-
-
     browser.visit(url)
-
-
-# In[6]:
-
 
     html = browser.html
     mars_hem = soup(html, 'html.parser')
 
 
 # ## Search for hemisphere titles
-
-# In[7]:
-
-
     hemi_names = []
 
 # Search for the names of all four hemispheres
@@ -245,20 +113,16 @@ def scrape():
 
     hemi_names
 
-
-# In[8]:
-
-
 # Search for thethumbnail links
     thumbnail_results = results[0].find_all('a')
     thumbnail_links = []
 
     for thumbnail in thumbnail_results:
 
-    # If the thumbnail element has an image...
+        # If the thumbnail element has an image...
         if (thumbnail.img):
 
-        # then grab the attached link
+            # then grab the attached link
             thumbnail_url = 'https://marshemispheres.com/' + thumbnail['href']
 
         # Append list with links
@@ -266,15 +130,11 @@ def scrape():
 
         thumbnail_links
 
-
-# In[10]:
-
-
     full_imgs = []
 
     for url in thumbnail_links:
 
-    # Click through each thumbanil link
+        # Click through each thumbanil link
         browser.visit(url)
 
         html = browser.html
@@ -295,9 +155,6 @@ def scrape():
 
 #  ## Store a list of dictionaries
 
-# In[11]:
-
-
 # Zip together the list of hemisphere names and hemisphere image links
     mars_hemi_zip = zip(hemi_names, full_imgs)
 
@@ -307,14 +164,14 @@ def scrape():
     for title, img in mars_hemi_zip:
 
         mars_hemi_dict = {}
-
     # Add hemisphere title to dictionary
         mars_hemi_dict['title'] = title
-
     # Add image url to dictionary
         mars_hemi_dict['img_url'] = img
-
     # Append the list with dictionaries
         hemisphere_image_urls.append(mars_hemi_dict)
-
     hemisphere_image_urls
+
+    browser.quit()
+
+    return listings
